@@ -359,7 +359,6 @@
 
         function generatePanelText(selfReplenish, cashReplenish, computerReplenish, systemCash) {
             const lines = [];
-            lines.push(`<span style="color: red;">默认总值收入已补录入</span>`);
             lines.push(`银基自收银补录：${selfReplenish.toFixed(2)}`);
             lines.push(`银基现金补录：${cashReplenish.toFixed(2)}`);
             lines.push(`眷茶银基动物王国系统收款录入：${computerReplenish.toFixed(2)}`);
@@ -430,12 +429,15 @@
             const lines = [];
             lines.push(`【眷茶臻选银基动物王国 ${record.date} 业绩】`);
             lines.push('');
+            lines.push(`A. 眷茶营业收入`);
             lines.push(`销售收入：${record.revenue.toFixed(2)}`);
             lines.push(`现金：${record.cashIncome.toFixed(2)}`);
             lines.push(`员工8折：${record.employeeDiscount.toFixed(2)}`);
             lines.push(`营业实收：${record.businessActual.toFixed(2)}`);
             lines.push('');
             lines.push(`B. 银基收银收入`);
+            lines.push(`银基系统收入：${record.systemIncome.toFixed(2)} (包含现金${record.systemCashIncome.toFixed(2)}元)`);
+            lines.push(`银基现金收入：${record.systemCashIncome.toFixed(2)}`);
             lines.push(`自收银补录：${record.selfReplenish.toFixed(2)}`);
             lines.push(`现金补录：${record.cashReplenish.toFixed(2)}`);
             lines.push(`合计补录：${record.totalReplenish.toFixed(2)}`);
