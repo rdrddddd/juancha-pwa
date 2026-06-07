@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>银基动物王国眷茶算账</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 40px 35px;
+            width: 100%;
+            max-width: 520px;
+            position: relative;
+            overflow: visible;
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4caf50, #81c784, #4caf50);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header .icon { font-size: 48px; margin-bottom: 10px; }
+        .header h1 { font-size: 22px; color: #2e7d32; font-weight: 700; letter-spacing: 1px; }
+        .header .subtitle { font-size: 13px; color: #66bb6a; margin-top: 6px; font-weight: 500; }
+
+        .month-total-bar {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border: 1px solid #ffe082;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .month-total-bar .month-label { font-size: 13px; color: #e65100; font-weight: 600; white-space: nowrap; }
+        .month-total-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .month-value-display {
+            font-size: 20px; font-weight: 800; color: #e65100; cursor: pointer;
+            padding: 2px 6px; border-radius: 6px; transition: background 0.2s; min-width: 60px; text-align: right;
+        }
+        .month-value-display:hover { background: rgba(0,0,0,0.05); }
+        .month-value-display .edit-hint { font-size: 10px; color: #bf360c; font-weight: 400; opacity: 0; transition: opacity 0.2s; margin-left: 4px; }
+        .month-value-display:hover .edit-hint { opacity: 1; }
+
+        .month-value-edit { display: none; align-items: center; gap: 4px; }
+        .month-value-edit.active { display: flex; }
+        .month-value-edit input {
+            width: 120px; padding: 6px 10px; font-size: 18px; font-weight: 700;
+            border: 2px solid #ff9800; border-radius: 8px; outline: none; text-align: right; color: #e65100; background: #fff;
+        }
+        .month-value-edit input:focus { border-color: #e65100; box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.15); }
+        .month-value-edit .btn-confirm {
+            padding: 6px 10px; font-size: 14px; background: #ff9800; color: #fff;
+            border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; white-space: nowrap;
+        }
+        .month-value-edit .btn-confirm:hover { background: #e65100; }
+        .month-value-edit .btn-cancel-edit {
+            padding: 6px 8px; font-size: 14px; background: #fff; color: #999;
+            border: 1px solid #ddd; border-radius: 6px; cursor: pointer; transition: all 0.2s;
+        }
+        .month-value-edit .btn-cancel-edit:hover { background: #f5f5f5; color: #333; }
+        .month-total-bar .month-reset {
+            font-size: 11px; color: #bf360c; background: #fff; border: 1px solid #ffcc80;
+            padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .month-total-bar .month-reset:hover { background: #ffebee; border-color: #ef9a9a; }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-size: 15px; font-weight: 600; color: #333; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .form-group label .label-icon { margin-right: 6px; }
+        .input-wrapper { position: relative; }
+        .input-wrapper .unit { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 700; color: #999; pointer-events: none; z-index: 1; }
+        .form-group input {
+            width: 100%; padding: 15px 16px 15px 38px; font-size: 18px; font-weight: 600;
+            border: 2px solid #e0e0e0; border-radius: 12px; outline: none; transition: all 0.3s ease; background: #fafafa; color: #333;
+        }
+        .form-group input:focus { border-color: #4caf50; background: #fff; box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1); }
+        .form-group input::placeholder { font-weight: 400; color: #bbb; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        .divider { border: none; border-top: 2px dashed #e8e8e8; margin: 25px 0; }
+
+        .result-panel { background: #fafeff; border: 2px solid #b0bec5; border-radius: 14px; overflow: hidden; margin-bottom: 20px; position: relative; }
+        .result-panel-header {
+            background: linear-gradient(135deg, #546e7a, #455a64); color: #fff;
+            padding: 14px 18px; font-size: 15px; font-weight: 700; text-align: center; letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .result-panel-header .panel-copy-btn {
+            font-size: 12px; padding: 5px 12px; background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 20px;
+            cursor: pointer; font-weight: 500; transition: all 0.2s; font-family: inherit;
+        }
+        .result-panel-header .panel-copy-btn:hover { background: rgba(255,255,255,0.3); }
+        .result-panel-header .panel-copy-btn.copied { background: #c8e6c9; border-color: #81c784; color: #2e7d32; }
+        .result-panel-body {
+            padding: 16px 18px; font-family: "SF Mono", "Menlo", "Monaco", "Consolas", "Microsoft YaHei", monospace;
+            font-size: 13px; line-height: 1.8; color: #333; white-space: pre-wrap; word-break: break-all;
+            user-select: text; cursor: text; min-height: 80px;
+        }
+        .result-panel-body .empty-hint { color: #ccc; text-align: center; padding: 20px 0; font-family: inherit; }
+
+        .btn-group { display: flex; gap: 12px; }
+        .btn {
+            flex: 1; padding: 14px; font-size: 16px; font-weight: 700;
+            border: none; border-radius: 12px; cursor: pointer; letter-spacing: 1px; transition: all 0.3s ease;
+        }
+        .btn-calculate { background: linear-gradient(135deg, #4caf50, #43a047); color: #fff; box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3); }
+        .btn-calculate:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(76, 175, 80, 0.4); }
+        .btn-calculate:active { transform: translateY(0); box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3); }
+        .btn-reset { background: #f5f5f5; color: #666; }
+        .btn-reset:hover { background: #eeeeee; color: #333; }
+
+        .record-section { margin-top: 30px; }
+        .record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 8px; }
+        .record-header h2 { font-size: 16px; color: #333; font-weight: 700; letter-spacing: 0.5px; }
+        .record-header-actions { display: flex; gap: 8px; align-items: center; }
+        .record-count { font-size: 12px; color: #999; background: #f5f5f5; padding: 4px 10px; border-radius: 20px; }
+        .btn-copy-all {
+            font-size: 12px; padding: 6px 14px; background: #e3f2fd; border: 1px solid #90caf9;
+            color: #1565c0; border-radius: 20px; cursor: pointer; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-copy-all:hover { background: #bbdefb; }
+        .btn-copy-all.copied { background: #c8e6c9; border-color: #81c784; color: #2e7d32; }
+
+        .record-list { display: flex; flex-direction: column; gap: 12px; max-height: 600px; overflow-y: auto; min-height: 80px; padding-right: 4px; }
+        .record-list::-webkit-scrollbar { width: 4px; }
+        .record-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .record-empty {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 20px; color: #ccc; background: #fafafa; border-radius: 12px; border: 1px solid #eee;
+        }
+        .record-empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
+        .record-empty p { font-size: 13px; }
+
+        .record-card {
+            background: #fafeff; border: 1px solid #dde; border-radius: 14px;
+            padding: 20px 22px; animation: slideIn 0.3s ease; position: relative;
+            font-family: "SF Mono", "Menlo", "Monaco", "Consolas", "Microsoft YaHei", monospace;
+            font-size: 13px; line-height: 1.8; color: #333; white-space: pre-wrap;
+            word-break: break-all; user-select: text; cursor: text;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .record-card .copy-btn {
+            position: absolute; top: 12px; right: 12px; background: #f5f5f5; border: 1px solid #e0e0e0;
+            color: #666; cursor: pointer; font-size: 12px; padding: 6px 12px; border-radius: 20px;
+            font-family: inherit; transition: all 0.2s; z-index: 2;
+        }
+        .record-card .copy-btn:hover { background: #e8f5e9; border-color: #81c784; color: #2e7d32; }
+        .record-card .copy-btn.copied { background: #c8e6c9; border-color: #66bb6a; color: #2e7d32; }
+        .record-card .delete-btn {
+            position: absolute; top: 12px; right: 80px; background: #f5f5f5; border: 1px solid #e0e0e0;
+            color: #999; cursor: pointer; font-size: 12px; padding: 6px 10px; border-radius: 20px;
+            font-family: inherit; transition: all 0.2s; z-index: 2;
+        }
+        .record-card .delete-btn:hover { background: #ffebee; border-color: #ef9a9a; color: #e53935; }
+
+        .clear-all-btn {
+            display: block; width: 100%; margin-top: 12px; padding: 10px;
+            background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+            color: #999; font-size: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        .clear-all-btn:hover { background: #ffebee; border-color: #ef9a9a; color: #e53935; }
+        .footer-text { text-align: center; font-size: 11px; color: #bbb; margin-top: 20px; }
+
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 10px 24px; border-radius: 20px;
+            font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4caf50">
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+
+    <div class="container">
+        <div class="header">
+            <div class="icon">🧋</div>
+            <h1>银基动物王国 · 眷茶算账</h1>
+            <p class="subtitle">每日营业收入统计</p>
+        </div>
+
+        <div class="month-total-bar">
+            <div><span class="month-label">📅 本月累计（<span id="currentMonth">--</span>月）</span></div>
+            <div class="month-total-right">
+                <span class="month-value-display" id="monthDisplay" onclick="enterEditMode()" title="点击修改本月累计">
+                    ¥<span id="monthTotalDisplay">0.00</span><span class="edit-hint">✎</span>
+                </span>
+                <span class="month-value-edit" id="monthEdit">
+                    ¥<input type="number" id="monthTotalInput" step="0.01" min="0" placeholder="输入数值">
+                    <button class="btn-confirm" onclick="confirmEditMonth()">✓</button>
+                    <button class="btn-cancel-edit" onclick="cancelEditMonth()">✕</button>
+                </span>
+                <button class="month-reset" onclick="manualResetMonth()" title="清零本月累计">↺ 清零</button>
+            </div>
+        </div>
+
+        <div class="form-group"><label><span class="label-icon">💰</span>眷茶营业收入</label><div class="input-wrapper"><span class="unit">¥</span><input type="number" id="revenue" placeholder="请输入营业收入" step="0.01" min="0" autocomplete="off"></div></div>
+        <div class="form-group"><label><span class="label-icon">💵</span>眷茶现金收入</label><div class="input-wrapper"><span class="unit">¥</span><input type="number" id="cashIncome" placeholder="请输入现金收入" step="0.01" min="0" autocomplete="off"></div></div>
+        <div class="form-group"><label><span class="label-icon">🏷️</span>优惠金额</label><div class="input-wrapper"><span class="unit">¥</span><input type="number" id="discount" placeholder="请输入优惠金额" step="0.01" min="0" autocomplete="off"></div></div>
+        <div class="form-group"><label><span class="label-icon">🏦</span>银基系统收入</label><div class="input-wrapper"><span class="unit">¥</span><input type="number" id="systemIncome" placeholder="请输入银基系统收入" step="0.01" min="0" autocomplete="off"></div></div>
+        <div class="form-group"><label><span class="label-icon">💴</span>银基现金收入</label><div class="input-wrapper"><span class="unit">¥</span><input type="number" id="systemCashIncome" placeholder="请输入银基现金收入" step="0.01" min="0" autocomplete="off"></div></div>
+        <div class="form-group"><label><span class="label-icon">📊</span>总值收入</label><div class="input-wrapper"><span class="unit">¥</span><input type="number" id="totalIncome" placeholder="请输入总值收入" step="0.01" min="0" autocomplete="off"></div></div>
+
+        <hr class="divider">
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-panel-header">
+                <span>🖥️ 银基电脑补录</span>
+                <button class="panel-copy-btn" id="panelCopyBtn" onclick="copyPanelText()">📋 复制</button>
+            </div>
+            <div class="result-panel-body" id="panelBody">
+                <div class="empty-hint">请输入数据后点击"计算并记录"</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-calculate" onclick="calculate()">📝 计算并记录</button>
+            <button class="btn btn-reset" onclick="resetAll()">🔄 清空输入</button>
+        </div>
+
+        <div class="record-section">
+            <div class="record-header">
+                <h2>📋 每日账单记录</h2>
+                <div class="record-header-actions">
+                    <span class="record-count" id="recordCount">0 条记录</span>
+                    <button class="btn-copy-all" id="btnCopyAll" onclick="copyAllRecords()" style="display:none;">📄 一键复制全部</button>
+                </div>
+            </div>
+            <div class="record-list" id="recordList">
+                <div class="record-empty" id="recordEmpty"><span class="empty-icon">📭</span><p>暂无记录，点击计算后自动添加</p></div>
+            </div>
+            <button class="clear-all-btn" onclick="clearAllRecords()" id="clearAllBtn" style="display:none;">🗑️ 清空所有记录</button>
+        </div>
+        <p class="footer-text">银基动物王国 · 眷茶</p>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'juancha_records';
+        const MONTH_TOTAL_KEY = 'juancha_month_total';
+        const MONTH_KEY = 'juancha_current_month';
+        let records = [], monthTotal = 0, currentMonth = null, isEditing = false, currentPanelText = '';
+
+        function init() {
+            const now = new Date();
+            const thisMonth = now.getMonth() + 1;
+            const thisYear = now.getFullYear();
+            const monthKey = `${thisYear}-${String(thisMonth).padStart(2, '0')}`;
+            const savedMonth = localStorage.getItem(MONTH_KEY);
+            const savedMonthTotal = parseFloat(localStorage.getItem(MONTH_TOTAL_KEY)) || 0;
+            const savedRecords = localStorage.getItem(STORAGE_KEY);
+            if (savedRecords) { try { records = JSON.parse(savedRecords); } catch (e) { records = []; } }
+            if (savedMonth !== monthKey) {
+                monthTotal = 0; currentMonth = monthKey;
+                localStorage.setItem(MONTH_KEY, monthKey);
+                localStorage.setItem(MONTH_TOTAL_KEY, '0');
+            } else { monthTotal = savedMonthTotal; currentMonth = monthKey; }
+            updateMonthDisplay(); renderRecords();
+        }
+
+        function updateMonthDisplay() {
+            document.getElementById('currentMonth').textContent = new Date().getMonth() + 1;
+            document.getElementById('monthTotalDisplay').textContent = monthTotal.toFixed(2);
+            if (isEditing) document.getElementById('monthTotalInput').value = monthTotal;
+        }
+
+        function enterEditMode() {
+            if (isEditing) return; isEditing = true;
+            document.getElementById('monthDisplay').style.display = 'none';
+            document.getElementById('monthEdit').classList.add('active');
+            const input = document.getElementById('monthTotalInput');
+            input.value = monthTotal; input.focus(); input.select();
+        }
+
+        function exitEditMode() {
+            isEditing = false;
+            document.getElementById('monthDisplay').style.display = '';
+            document.getElementById('monthEdit').classList.remove('active');
+        }
+
+        function confirmEditMonth() {
+            const input = document.getElementById('monthTotalInput');
+            const newValue = parseFloat(input.value);
+            if (isNaN(newValue) || newValue < 0) { alert('⚠️ 请输入有效的金额'); input.focus(); return; }
+            const oldValue = monthTotal;
+            monthTotal = newValue; updateMonthDisplay(); saveData(); exitEditMode();
+            if (oldValue !== newValue) showToast(`✅ 本月累计已更新：¥${oldValue.toFixed(2)} → ¥${newValue.toFixed(2)}`);
+        }
+
+        function cancelEditMonth() { exitEditMode(); updateMonthDisplay(); }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && isEditing) { e.preventDefault(); e.stopPropagation(); confirmEditMonth(); }
+            if (e.key === 'Escape' && isEditing) { e.preventDefault(); e.stopPropagation(); cancelEditMonth(); }
+        }, true);
+
+        function checkMonthReset() {
+            const now = new Date();
+            const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            if (currentMonth !== monthKey) {
+                monthTotal = 0; currentMonth = monthKey;
+                localStorage.setItem(MONTH_KEY, monthKey);
+                localStorage.setItem(MONTH_TOTAL_KEY, '0');
+                updateMonthDisplay();
+            }
+        }
+
+        function manualResetMonth() {
+            if (confirm('确定要手动清零本月累计吗？此操作不可撤销。')) {
+                monthTotal = 0; updateMonthDisplay(); saveData(); showToast('✅ 本月累计已清零');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            localStorage.setItem(MONTH_TOTAL_KEY, monthTotal.toString());
+            localStorage.setItem(MONTH_KEY, currentMonth);
+        }
+
+        function generatePanelText(selfReplenish, cashReplenish, computerReplenish, systemCash) {
+            const lines = [];
+            lines.push(`<span style="color: red;">默认总值收入已补录入</span>`);
+            lines.push(`银基自收银补录：${selfReplenish.toFixed(2)}`);
+            lines.push(`银基现金补录：${cashReplenish.toFixed(2)}`);
+            lines.push(`眷茶银基动物王国系统收款录入：${computerReplenish.toFixed(2)}`);
+            lines.push(`眷茶现金补录：${systemCash.toFixed(2)}`);
+            return lines.join('\n');
+        }
+
+        function calculate() {
+            checkMonthReset();
+            const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+            const cashIncome = parseFloat(document.getElementById('cashIncome').value) || 0;
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const systemIncome = parseFloat(document.getElementById('systemIncome').value) || 0;
+            const systemCashIncome = parseFloat(document.getElementById('systemCashIncome').value) || 0;
+            const totalIncome = parseFloat(document.getElementById('totalIncome').value) || 0;
+
+            if (revenue < 0 || cashIncome < 0 || discount < 0 || systemIncome < 0 || systemCashIncome < 0 || totalIncome < 0) {
+                alert('⚠️ 请输入有效的金额（不能为负数）'); return;
+            }
+            if (revenue === 0 && cashIncome === 0 && discount === 0 && systemIncome === 0 && systemCashIncome === 0 && totalIncome === 0) {
+                alert('⚠️ 请至少输入一项数据'); return;
+            }
+
+            const employeeDiscount = discount * 4;
+            const businessActual = revenue - cashIncome - employeeDiscount;
+            const selfReplenish = revenue - employeeDiscount - cashIncome;
+            const cashReplenish = cashIncome;
+            const computerReplenish = systemIncome - systemCashIncome - totalIncome;
+            const systemCash = systemCashIncome;
+            const totalReplenish = selfReplenish + cashReplenish;
+            // 总计现金 = 眷茶现金收入 + 银基现金收入
+            const totalCash = cashIncome + systemCashIncome;
+            const finalIncome = totalReplenish + systemIncome;
+
+            monthTotal += finalIncome;
+            updateMonthDisplay();
+            currentPanelText = generatePanelText(selfReplenish, cashReplenish, computerReplenish, systemCash);
+            updatePanelDisplay();
+
+            addRecord({
+                revenue, cashIncome, discount, employeeDiscount, businessActual,
+                selfReplenish, cashReplenish, computerReplenish, systemCash,
+                totalReplenish, totalCash, systemIncome, systemCashIncome, totalIncome,
+                finalIncome, monthTotal, panelText: currentPanelText
+            });
+            saveData();
+        }
+
+        function updatePanelDisplay() {
+            const panelBody = document.getElementById('panelBody');
+            if (currentPanelText) {
+                panelBody.innerHTML = currentPanelText.replace(/\n/g, '<br>');
+            } else {
+                panelBody.innerHTML = '<div class="empty-hint">请输入数据后点击"计算并记录"</div>';
+            }
+        }
+
+        function copyPanelText() {
+            if (!currentPanelText) { showToast('⚠️ 暂无数据，请先计算'); return; }
+            copyToClipboard(currentPanelText);
+            const btn = document.getElementById('panelCopyBtn');
+            const orig = btn.textContent;
+            btn.textContent = '✅ 已复制'; btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+        }
+
+        function generateBillText(record) {
+            const lines = [];
+            lines.push(`【眷茶臻选银基动物王国 ${record.date} 业绩】`);
+            lines.push('');
+            lines.push(`销售收入：${record.revenue.toFixed(2)}`);
+            lines.push(`现金：${record.cashIncome.toFixed(2)}`);
+            lines.push(`员工8折：${record.employeeDiscount.toFixed(2)}`);
+            lines.push(`营业实收：${record.businessActual.toFixed(2)}`);
+            lines.push('');
+            lines.push(`B. 银基收银收入`);
+            lines.push(`自收银补录：${record.selfReplenish.toFixed(2)}`);
+            lines.push(`现金补录：${record.cashReplenish.toFixed(2)}`);
+            lines.push(`合计补录：${record.totalReplenish.toFixed(2)}`);
+            lines.push(`总计现金：${record.totalCash.toFixed(2)}`);
+            lines.push(`最终收入：${record.finalIncome.toFixed(2)}`);
+            lines.push(`本月累计：${record.monthTotal.toFixed(2)}元（减去员工8折）`);
+            return lines.join('\n');
+        }
+
+        function addRecord(data) {
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const timeStr = `${dateStr} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            records.unshift({ id: Date.now(), date: dateStr, time: timeStr, ...data });
+            renderRecords();
+        }
+
+        function renderRecords() {
+            const recordList = document.getElementById('recordList');
+            const recordCount = document.getElementById('recordCount');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const btnCopyAll = document.getElementById('btnCopyAll');
+            recordCount.textContent = `${records.length} 条记录`;
+
+            if (records.length === 0) {
+                recordList.innerHTML = `<div class="record-empty"><span class="empty-icon">📭</span><p>暂无记录，点击计算后自动添加</p></div>`;
+                clearAllBtn.style.display = 'none'; btnCopyAll.style.display = 'none';
+                return;
+            }
+            clearAllBtn.style.display = 'block'; btnCopyAll.style.display = 'inline-block';
+
+            recordList.innerHTML = records.map((record, index) => {
+                const billText = generateBillText(record);
+                const escapedText = billText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div class="record-card" style="animation-delay: ${index * 0.05}s" id="card-${record.id}">
+                    <button class="copy-btn" onclick="copySingleRecord(${record.id})" id="copyBtn-${record.id}">📋 复制</button>
+                    <button class="delete-btn" onclick="deleteRecord(${record.id})">✕ 删除</button>
+                    <div class="bill-content">${escapedText.replace(/\n/g, '<br>')}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function copySingleRecord(id) {
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            copyToClipboard(generateBillText(record));
+            const btn = document.getElementById('copyBtn-' + id);
+            if (btn) { const orig = btn.textContent; btn.textContent = '✅ 已复制'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500); }
+        }
+
+        function copyAllRecords() {
+            if (records.length === 0) return;
+            copyToClipboard(records.map(r => generateBillText(r)).join('\n\n---\n\n'));
+            const btn = document.getElementById('btnCopyAll');
+            const orig = btn.textContent; btn.textContent = '✅ 已复制全部'; btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast('✅ 已复制到剪贴板')).catch(() => fallbackCopy(text));
+            } else { fallbackCopy(text); }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            try { document.execCommand('copy'); showToast('✅ 已复制到剪贴板'); }
+            catch (e) { showToast('⚠️ 复制失败，请手动选中复制'); }
+            document.body.removeChild(ta);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg; toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+
+        function deleteRecord(id) {
+            const record = records.find(r => r.id === id);
+            if (record) { monthTotal -= record.finalIncome; if (monthTotal < 0) monthTotal = 0; updateMonthDisplay(); }
+            records = records.filter(r => r.id !== id);
+            saveData(); renderRecords();
+        }
+
+        function clearAllRecords() {
+            if (records.length === 0) return;
+            if (confirm(`确定要清空全部 ${records.length} 条记录吗？\n⚠️ 本月累计也会同时清零！`)) {
+                records = []; monthTotal = 0; updateMonthDisplay(); saveData(); renderRecords();
+            }
+        }
+
+        function resetAll() {
+            document.getElementById('revenue').value = '';
+            document.getElementById('cashIncome').value = '';
+            document.getElementById('discount').value = '';
+            document.getElementById('systemIncome').value = '';
+            document.getElementById('systemCashIncome').value = '';
+            document.getElementById('totalIncome').value = '';
+            currentPanelText = '';
+            updatePanelDisplay();
+            document.getElementById('revenue').focus();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !isEditing) { e.preventDefault(); calculate(); }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (isEditing) {
+                const editArea = document.getElementById('monthEdit');
+                const displayArea = document.getElementById('monthDisplay');
+                if (!editArea.contains(e.target) && !displayArea.contains(e.target)) cancelEditMonth();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', function() { init(); document.getElementById('revenue').focus(); });
+    </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+    });
+}
+</script>
+
+</body>
+</html>
